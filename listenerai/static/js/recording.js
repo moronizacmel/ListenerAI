@@ -1,6 +1,9 @@
 const mic_btn = document.querySelector('#mic');
 const playback = document.querySelector('.playback');
 
+const csrfTokenInput = mic_btn.querySelector('[name="csrfmiddlewaretoken"]');
+const csrfToken = csrfTokenInput.value;
+
 
 mic_btn.addEventListener('click', ToggleMic);
 
@@ -86,7 +89,8 @@ function ToggleMic() {
 function SendAudioSegment(segment) {
     const formData = new FormData();
     formData.append('audio', new Blob(segment, { type: "audio/ogg; codecs=opus" }));
-
+    formData.append('csrfmiddlewaretoken', csrfToken);
+        
     fetch('/listen', {
         method: 'POST',
         body: formData
