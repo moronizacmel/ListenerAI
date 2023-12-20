@@ -9,7 +9,7 @@ def index (request):
     return render(request, 'index.html')
 
 
-def listener (request):
+def listen (request):
     if request.method == 'POST':
         audio = request.POST['audio']
     else:

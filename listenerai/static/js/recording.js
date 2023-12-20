@@ -1,6 +1,7 @@
 const mic_btn = document.querySelector('#mic');
 const playback = document.querySelector('.playback');
 
+
 mic_btn.addEventListener('click', ToggleMic);
 
 let can_record = false;
@@ -48,6 +49,17 @@ function SetupStream(stream){
     }
 
     can_record = true;
+    
+    
+
+    setInterval(() => {
+        
+        
+            SendAudioSegment(chunks);
+            chunks = [];
+        
+        
+    }, 5000);
 
 }
 
@@ -69,4 +81,19 @@ function ToggleMic() {
 
     }
 
+}
+
+function SendAudioSegment(segment) {
+    const formData = new FormData();
+    formData.append('audio', new Blob(segment, { type: "audio/ogg; codecs=opus" }));
+
+    fetch('/listen', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(transcription => {
+        console.log('Transcription:', transcription);
+    })
+    .catch(error => console.error('Error:', error));
 }

@@ -20,6 +20,6 @@ from . import views
 urlpatterns = [
    
     path('', views.index, name='index'),
-    path('listen', views.listener, name='listener'),
+    path('listen', views.listen, name='listen'),
 
 ]
