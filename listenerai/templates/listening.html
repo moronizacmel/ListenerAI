@@ -4,29 +4,28 @@
 
 {% block title %}Listening{% endblock %}
 
-{% block styles %} <link rel="stylesheet" href="{% static '/css/recording.css' %}"> {% endblock %}
+{% block styles %} 
 
-{% block scripts %} <script src="{% static 'js/recording.js' %}"></script> {% endblock %}
+    <link rel="stylesheet" href="{% static '/css/recording.css' %}"> 
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+{% endblock %}
 
 {% block content %}
 
-<div class="listenerContent">
+<div class="recordingContent">
 
     <h1>Listening</h1>
 
-    <!-- <div class="recorder">
-
-        <div class="button1" id="first">
-            <div class="innercircle circle animation1 trigger"></div>
-            <div class="outcircle circle animation2 trigger"></div>
-            <div class="innercircle circle hidesecond"></div>
-            <div class="outcircle circle hidesecond"></div>
-        </div>
-
-    </div> -->
-
     
+    <button class="mic-toggle" id="mic">
 
+        <span class="material-icons">mic</span>
+        
+    
+    </button>
+
+    <audio class="playback" controls></audio>
 
 
 
@@ -36,4 +35,8 @@
 </div>
 
 
+{% endblock %}
+
+{% block bodyscripts %} 
+    <script src="{% static 'js/recording.js' %}"></script> 
 {% endblock %}
