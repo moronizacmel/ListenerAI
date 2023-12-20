@@ -31,19 +31,21 @@ function SetupAudio(){
 
 SetupAudio();
 
-function SetupStream(stream){
+async function SetupStream(stream){
 
     recorder = new MediaRecorder(stream);
 
     recorder.ondataavailable = e => {
 
         chunks.push(e.data);
+        console.log('Sending Data: ', chunks);
+        SendAudioSegment(chunks);
 
     } 
 
     recorder.onstop = e => {
 
-        const blob = new Blob(chunks, {type: "audio/ogg; codecs=opus"});
+        const blob = new Blob(chunks, {type: "audio/mpeg"});
         chunks = []
 
         const audioURL = window.URL.createObjectURL(blob);
@@ -53,18 +55,17 @@ function SetupStream(stream){
 
     can_record = true;
     
+}
+
+// setInterval(() => {
+    
+//     SendAudioSegment(chunks);
+//     console.log(chunks);
+//     chunks = [];
     
 
-    setInterval(() => {
-        
-        
-            SendAudioSegment(chunks);
-            chunks = [];
-        
-        
-    }, 5000);
 
-}
+// }, 5000);
 
 function ToggleMic() {
 
@@ -88,9 +89,10 @@ function ToggleMic() {
 
 function SendAudioSegment(segment) {
     const formData = new FormData();
-    formData.append('audio', new Blob(segment, { type: "audio/ogg; codecs=opus" }));
+    formData.append('audio', new Blob(segment, { type: "audio/mpeg" }));
     formData.append('csrfmiddlewaretoken', csrfToken);
-        
+
+
     fetch('/listen', {
         method: 'POST',
         body: formData
