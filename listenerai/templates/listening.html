@@ -1,7 +1,39 @@
 {% extends 'template.html' %}
 
+{% load static %}
+
 {% block title %}Listening{% endblock %}
 
+{% block styles %} <link rel="stylesheet" href="{% static '/css/recording.css' %}"> {% endblock %}
+
+{% block scripts %} <script src="{% static 'js/recording.js' %}"></script> {% endblock %}
+
 {% block content %}
-    <h1>Listening asdsad</h1>
+
+<div class="listenerContent">
+
+    <h1>Listening</h1>
+
+    <!-- <div class="recorder">
+
+        <div class="button1" id="first">
+            <div class="innercircle circle animation1 trigger"></div>
+            <div class="outcircle circle animation2 trigger"></div>
+            <div class="innercircle circle hidesecond"></div>
+            <div class="outcircle circle hidesecond"></div>
+        </div>
+
+    </div> -->
+
+    
+
+
+
+
+    
+
+
+</div>
+
+
 {% endblock %}

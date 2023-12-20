@@ -5,6 +5,8 @@
 <head>
     <title>{% block title %} {% endblock %}</title>
     <link rel="stylesheet" href="{% static '/css/styles.css' %}">
+    {% block styles %} {% endblock %}
+    {% block scripts %} {% endblock %}
 </head>
 <body class="background">
     <div id="content">

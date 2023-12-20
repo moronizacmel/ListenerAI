@@ -7,3 +7,11 @@ from django.http import HttpResponse
 def index (request):
 
     return render(request, 'index.html')
+
+
+def listener (request):
+    if request.method == 'POST':
+        audio = request.POST['audio']
+    else:
+        return render(request, 'listening.html')
+    
