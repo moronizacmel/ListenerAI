@@ -4,5 +4,6 @@ from django.http import HttpResponse
 
 # Create your views here.
 
-def listening (request):
-    return HttpResponse("Listening")
+def index (request):
+
+    return render(request, 'index.html')
