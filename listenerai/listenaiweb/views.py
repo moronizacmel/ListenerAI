@@ -28,7 +28,7 @@ def listen (request):
             with open(temp_audio_path, 'wb') as temp_audio_file:
                 temp_audio_file.write(audio_content)
 
-            model = whisper.load_model("base")
+            model = whisper.load_model("tiny")
             result = model.transcribe(temp_audio_path)
             transcription = result["text"]
 

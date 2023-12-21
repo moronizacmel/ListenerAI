@@ -4,7 +4,6 @@ const playback = document.querySelector('.playback');
 const csrfTokenInput = mic_btn.querySelector('[name="csrfmiddlewaretoken"]');
 const csrfToken = csrfTokenInput.value;
 
-
 mic_btn.addEventListener('click', ToggleMic);
 
 let can_record = false;
@@ -13,6 +12,10 @@ let is_recording = false;
 let recorder = null;
 
 let chunks = [];
+
+const MIN_SILENCE_DURATION = 2000;
+const AMPLITUDE = 0.05;
+
 
 function SetupAudio(){
 
@@ -31,12 +34,17 @@ function SetupAudio(){
 
 SetupAudio();
 
-async function SetupStream(stream){
+function SetupStream(stream){
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    source.connect(analyser);
 
     recorder = new MediaRecorder(stream);
 
     recorder.ondataavailable = e => {
-
         chunks.push(e.data);
         console.log('Sending Data: ', chunks);
         SendAudioSegment(chunks);
@@ -44,28 +52,58 @@ async function SetupStream(stream){
     } 
 
     recorder.onstop = e => {
-
         const blob = new Blob(chunks, {type: "audio/mpeg"});
         chunks = []
 
         const audioURL = window.URL.createObjectURL(blob);
         playback.src = audioURL;
-
     }
 
+    recorder.onstart = () => {
+        is_recording = true;
+    
+        let lastDetectionTime = Date.now();
+        let currentTime = Date.now();
+        let silenceStartTime = 0;
+    
+        function analyzeAudio() {
+            if (is_recording) {
+                analyser.getByteFrequencyData(dataArray);
+                let averageAmplitude = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length / 256;
+    
+                let timeSinceLastDetection = currentTime - lastDetectionTime;
+    
+                if (averageAmplitude < AMPLITUDE) {
+                    if (timeSinceLastDetection >= MIN_SILENCE_DURATION) {
+                        if (silenceStartTime === 0) {
+                            silenceStartTime = Date.now();
+                        }
+    
+                        const silenceDuration = Date.now() - silenceStartTime;
+    
+                        if (silenceDuration >= MIN_SILENCE_DURATION) {
+                            console.log('Silencio');
+                            lastDetectionTime = Date.now();
+                        }
+                    }
+                } else {
+                    silenceStartTime = 0;
+                    console.log('Sound');
+                }
+    
+                currentTime = Date.now();
+            }
+    
+            requestAnimationFrame(analyzeAudio);
+        }
+    
+        analyzeAudio();
+    };
+    
+
     can_record = true;
-    
+
 }
-
-// setInterval(() => {
-    
-//     SendAudioSegment(chunks);
-//     console.log(chunks);
-//     chunks = [];
-    
-
-
-// }, 5000);
 
 function ToggleMic() {
 
@@ -74,17 +112,12 @@ function ToggleMic() {
     is_recording = !is_recording;
 
     if (is_recording){
-
         recorder.start();
         mic_btn.classList.add("is-recording")
-
     } else {
-
         recorder.stop();
         mic_btn.classList.remove("is-recording")
-
     }
-
 }
 
 function SendAudioSegment(segment) {
