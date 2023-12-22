@@ -16,7 +16,6 @@ let chunks = [];
 const MIN_SILENCE_DURATION = 2000;
 const AMPLITUDE = 0.1;
 
-
 function SetupAudio(){
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
@@ -84,41 +83,29 @@ function SetupStream(stream){
                             lastDetectionTime = Date.now();
 
                             if (finishedSilence){
-
                                 finishedSilence = false;
-                                recorder.stop();
-                                
+                                recorder.stop(); 
                             }
-
                         }
                     }
                 } else {
-
                     if (recorder.state == "inactive"){      
                         recorder.start();
                     }
-
                     silenceStartTime = 0;
                     console.log('Sound');
                     finishedSilence = true;
                 }
-    
                 currentTime = Date.now();
             }
-    
             requestAnimationFrame(analyzeAudio);
         }
-    
         analyzeAudio();
     };
-    
-
     can_record = true;
-
 }
 
 function ToggleMic() {
-
     if (!can_record) return;
 
     is_recording = !is_recording;
@@ -137,7 +124,6 @@ function SendAudioSegment(segment) {
     const formData = new FormData();
     formData.append('audio', new Blob(segment, { type: "audio/mpeg" }));
     formData.append('csrfmiddlewaretoken', csrfToken);
-
 
     fetch('/listen', {
         method: 'POST',
