@@ -14,7 +14,7 @@ let recorder = null;
 let chunks = [];
 
 const MIN_SILENCE_DURATION = 2000;
-const AMPLITUDE = 0.05;
+const AMPLITUDE = 0.1;
 
 
 function SetupAudio(){
@@ -46,17 +46,14 @@ function SetupStream(stream){
 
     recorder.ondataavailable = e => {
         chunks.push(e.data);
-        console.log('Sending Data: ', chunks);
-        SendAudioSegment(chunks);
-
     } 
 
     recorder.onstop = e => {
-        const blob = new Blob(chunks, {type: "audio/mpeg"});
-        chunks = []
-
-        const audioURL = window.URL.createObjectURL(blob);
-        playback.src = audioURL;
+        if (chunks.length > 0) {
+            console.log('Sending Data: ', chunks);
+            SendAudioSegment(chunks);
+        }
+        chunks = [];
     }
 
     recorder.onstart = () => {
@@ -65,6 +62,7 @@ function SetupStream(stream){
         let lastDetectionTime = Date.now();
         let currentTime = Date.now();
         let silenceStartTime = 0;
+        let finishedSilence = false;
     
         function analyzeAudio() {
             if (is_recording) {
@@ -84,11 +82,25 @@ function SetupStream(stream){
                         if (silenceDuration >= MIN_SILENCE_DURATION) {
                             console.log('Silencio');
                             lastDetectionTime = Date.now();
+
+                            if (finishedSilence){
+
+                                finishedSilence = false;
+                                recorder.stop();
+                                
+                            }
+
                         }
                     }
                 } else {
+
+                    if (recorder.state == "inactive"){      
+                        recorder.start();
+                    }
+
                     silenceStartTime = 0;
                     console.log('Sound');
+                    finishedSilence = true;
                 }
     
                 currentTime = Date.now();
@@ -112,6 +124,7 @@ function ToggleMic() {
     is_recording = !is_recording;
 
     if (is_recording){
+        chunks = [];
         recorder.start();
         mic_btn.classList.add("is-recording")
     } else {
