@@ -1,5 +1,6 @@
 const mic_btn = document.querySelector('#mic');
 const playback = document.querySelector('.playback');
+const text_container = document.getElementById('transcription-container');
 
 const csrfTokenInput = mic_btn.querySelector('[name="csrfmiddlewaretoken"]');
 const csrfToken = csrfTokenInput.value;
@@ -132,6 +133,19 @@ function SendAudioSegment(segment) {
     .then(response => response.json())
     .then(transcription => {
         console.log('Transcription:', transcription);
+        showTranscriptionProgressively(transcription.transcription);
     })
     .catch(error => console.error('Error:', error));
+}
+
+function showTranscriptionProgressively(transcription) {
+    let index = 0;
+    const intervalId = setInterval(function() {
+        text_container.innerHTML += transcription.charAt(index);
+        index++;
+
+        if (index === transcription.length) {
+            clearInterval(intervalId);
+        }
+    }, 100);
 }
