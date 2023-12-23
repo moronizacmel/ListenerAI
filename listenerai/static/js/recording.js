@@ -14,13 +14,14 @@ let recorder = null;
 
 let chunks = [];
 
-const MIN_SILENCE_DURATION = 2000;
-const AMPLITUDE = 0.1;
+const MIN_SILENCE_DURATION = 500;
+
+//0.1 more sensitive to sounds AND 0.3 less sensitive to sounds
+const NOISE_AMPLITUDE = 0.2;
 
 function SetupAudio(){
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
-
         navigator.mediaDevices
             .getUserMedia({
                 audio: true
@@ -71,7 +72,7 @@ function SetupStream(stream){
     
                 let timeSinceLastDetection = currentTime - lastDetectionTime;
     
-                if (averageAmplitude < AMPLITUDE) {
+                if (averageAmplitude < NOISE_AMPLITUDE) {
                     if (timeSinceLastDetection >= MIN_SILENCE_DURATION) {
                         if (silenceStartTime === 0) {
                             silenceStartTime = Date.now();

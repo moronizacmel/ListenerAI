@@ -9,6 +9,9 @@ import os
 
 # Create your views here.
 
+model = whisper.load_model("tiny.en")
+
+
 def index (request):
 
     return render(request, 'index.html')
@@ -28,7 +31,6 @@ def listen (request):
             with open(temp_audio_path, 'wb') as temp_audio_file:
                 temp_audio_file.write(audio_content)
 
-            model = whisper.load_model("tiny")
             result = model.transcribe(temp_audio_path)
             transcription = result["text"]
 
