@@ -1,2 +1,5 @@
 django
 openai-whisper
+
+
+google-generativeai

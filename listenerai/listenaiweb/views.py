@@ -9,7 +9,9 @@ import os
 
 # Create your views here.
 
-model = whisper.load_model("tiny.en")
+model = whisper.load_model("base")
+
+file_counter = 1
 
 
 def index (request):
@@ -18,15 +20,17 @@ def index (request):
 
 
 def listen (request):
-    if request.method == 'POST':
 
+    global file_counter
+
+    if request.method == 'POST':
 
         audio_blob = request.FILES.get('audio')
 
         if audio_blob:
 
             audio_content = audio_blob.read()
-            temp_audio_path = os.path.join(settings.MEDIA_ROOT, 'temp_audio.mp3')
+            temp_audio_path = os.path.join(settings.MEDIA_ROOT, f'static/assets/temprecordings/temp_audio_{file_counter}.mp3')
 
             with open(temp_audio_path, 'wb') as temp_audio_file:
                 temp_audio_file.write(audio_content)
@@ -35,6 +39,8 @@ def listen (request):
             transcription = result["text"]
 
             os.remove(temp_audio_path)
+
+            file_counter += 1
 
             return JsonResponse({'transcription': transcription})    
 
