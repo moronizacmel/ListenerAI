@@ -14,7 +14,7 @@ let recorder = null;
 
 let chunks = [];
 
-const MIN_SILENCE_DURATION = 500;
+const MIN_SILENCE_DURATION = 1000;
 
 //0.1 more sensitive to sounds AND 0.3 less sensitive to sounds
 const NOISE_AMPLITUDE = 0.2;
@@ -122,31 +122,65 @@ function ToggleMic() {
     }
 }
 
-function SendAudioSegment(segment) {
+async function SendAudioSegment(segment) {
     const formData = new FormData();
     formData.append('audio', new Blob(segment, { type: "audio/mpeg" }));
     formData.append('csrfmiddlewaretoken', csrfToken);
 
-    fetch('/listen', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(transcription => {
+    try {
+        const response = await fetch('/listen', {
+            method: 'POST',
+            body: formData
+        });
+
+        const transcription = await response.json();
         console.log('Transcription:', transcription);
-        showTranscriptionProgressively(transcription.transcription);
-    })
-    .catch(error => console.error('Error:', error));
+        await showTranscriptionProgressively(transcription.transcription);
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
 function showTranscriptionProgressively(transcription) {
-    let index = 0;
-    const intervalId = setInterval(function() {
-        text_container.innerHTML += transcription.charAt(index);
-        index++;
+    return new Promise((resolve) => {
+        let index = 0;
+        const intervalId = setInterval(function () {
+            text_container.innerHTML += transcription.charAt(index);
+            index++;
 
-        if (index === transcription.length) {
-            clearInterval(intervalId);
-        }
-    }, 100);
+            if (index === transcription.length) {
+                clearInterval(intervalId);
+                resolve();
+            }
+        }, 1);
+    });
 }
+
+// function SendAudioSegment(segment) {
+//     const formData = new FormData();
+//     formData.append('audio', new Blob(segment, { type: "audio/mpeg" }));
+//     formData.append('csrfmiddlewaretoken', csrfToken);
+
+//     fetch('/listen', {
+//         method: 'POST',
+//         body: formData
+//     })
+//     .then(response => response.json())
+//     .then(transcription => {
+//         console.log('Transcription:', transcription);
+//         showTranscriptionProgressively(transcription.transcription);
+//     })
+//     .catch(error => console.error('Error:', error));
+// }
+
+// function showTranscriptionProgressively(transcription) {
+//     let index = 0;
+//     const intervalId = setInterval(function() {
+//         text_container.innerHTML += transcription.charAt(index);
+//         index++;
+
+//         if (index === transcription.length) {
+//             clearInterval(intervalId);
+//         }
+//     }, 100);
+// }
