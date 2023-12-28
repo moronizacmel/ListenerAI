@@ -21,5 +21,6 @@ urlpatterns = [
    
     path('', views.index, name='index'),
     path('listen', views.listen, name='listen'),
+    path('gemini', views.gemini, name='gemini'),
 
 ]

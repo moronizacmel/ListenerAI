@@ -5,8 +5,16 @@ from django.conf import settings
 
 import whisper
 import os
-
 import threading
+
+
+# Imports for Google Gemini
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv('.env')
+KEY = os.dotenv('GOOGLE_GEMINI')
+genai.configure(api_key=KEY)
 
 # Create your views here.
 
@@ -15,6 +23,8 @@ model = whisper.load_model("base")
 file_counter = 1
 
 file_lock = threading.Lock()
+
+
 
 def index (request):
     return render(request, 'index.html')
@@ -45,4 +55,9 @@ def listen(request):
     else:
         return render(request, 'listening.html')
 
-    
+def gemini(request):
+
+    if request.method == 'POST':
+
+
+

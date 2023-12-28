@@ -7,7 +7,9 @@
 {% block styles %} 
 
     <link rel="stylesheet" href="{% static '/css/recording.css' %}"> 
+    <link rel="stylesheet" href="{% static '/css/chat.css' %}">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="{% static 'js/chat.js' %}" defer></script> 
 
 {% endblock %}
 
@@ -27,6 +29,31 @@
     </button>
 
     <div class="transcript" id="transcription-container"></div>
+
+</div>
+
+<div class="chatai">
+
+    <header>
+        <h2>ListenerAI</h2>
+    </header>
+
+    <ul class="chatbox">
+        <li class="chat incoming">
+            <span class="material-icons">smart_toy</span>
+            <p>Hi There! <br>Click on the mic to star listening</p>
+        </li>
+        <li class="chat outgoing">
+        </li>
+    </ul>
+    <div class="chat-input">
+
+        <textarea placeholder="Enter a message..." required></textarea>
+        <span id="send-btn" class="material-icons">send</span>
+
+    </div>
+
+
 
 </div>
 
