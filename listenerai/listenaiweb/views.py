@@ -59,5 +59,5 @@ def gemini(request):
 
     if request.method == 'POST':
 
-
+        return
 
