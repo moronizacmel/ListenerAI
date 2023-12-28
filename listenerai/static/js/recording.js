@@ -14,10 +14,14 @@ let recorder = null;
 
 let chunks = [];
 
-const MIN_SILENCE_DURATION = 1000;
+const DEFAULT_MIN_SILENCE_DURATION = 1000;
+let MIN_SILENCE_DURATION = 1000;
 
-//0.1 more sensitive to sounds AND 0.3 less sensitive to sounds
-const NOISE_AMPLITUDE = 0.2;
+//50 more sensitive to sounds AND 100 less sensitive to sounds (From 0 to 256)
+const DEFAULT_NOISE_AMPLITUDE = 50;
+let NOISE_AMPLITUDE = 50;
+
+let SOUND = true;
 
 function SetupAudio(){
 
@@ -39,6 +43,7 @@ function SetupStream(stream){
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const source = audioContext.createMediaStreamSource(stream);
     const analyser = audioContext.createAnalyser();
+    //Small-Faster: 64  Medium-Regular: 256-1024    Large-Slow: 2048
     analyser.fftSize = 256;
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
     source.connect(analyser);
@@ -68,21 +73,25 @@ function SetupStream(stream){
         function analyzeAudio() {
             if (is_recording) {
                 analyser.getByteFrequencyData(dataArray);
-                let averageAmplitude = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length / 256;
+                let averageAmplitude = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
     
                 let timeSinceLastDetection = currentTime - lastDetectionTime;
     
                 if (averageAmplitude < NOISE_AMPLITUDE) {
+
                     if (timeSinceLastDetection >= MIN_SILENCE_DURATION) {
                         if (silenceStartTime === 0) {
                             silenceStartTime = Date.now();
+                            
                         }
     
                         const silenceDuration = Date.now() - silenceStartTime;
     
                         if (silenceDuration >= MIN_SILENCE_DURATION) {
+                            SOUND = false;
                             console.log('Silencio');
                             lastDetectionTime = Date.now();
+                            resetSilenceAmplitude();
 
                             if (finishedSilence){
                                 finishedSilence = false;
@@ -91,11 +100,15 @@ function SetupStream(stream){
                         }
                     }
                 } else {
+
+                    SOUND = true;
+
                     if (recorder.state == "inactive"){      
                         recorder.start();
                     }
                     silenceStartTime = 0;
                     console.log('Sound');
+
                     finishedSilence = true;
                 }
                 currentTime = Date.now();
@@ -155,6 +168,30 @@ function showTranscriptionProgressively(transcription) {
         }, 1);
     });
 }
+
+
+function updateSilenceAmplitude() {
+
+    if(SOUND && is_recording){
+        if (NOISE_AMPLITUDE < 60){
+            NOISE_AMPLITUDE = NOISE_AMPLITUDE + 1;
+            MIN_SILENCE_DURATION = MIN_SILENCE_DURATION - 50;
+        }
+        console.log(NOISE_AMPLITUDE);
+    }
+
+}
+
+function resetSilenceAmplitude() {
+
+    NOISE_AMPLITUDE = DEFAULT_NOISE_AMPLITUDE;
+    MIN_SILENCE_DURATION = DEFAULT_MIN_SILENCE_DURATION;
+}
+
+const updateAmplitude = setInterval(updateSilenceAmplitude, 1000);
+
+
+
 
 // function SendAudioSegment(segment) {
 //     const formData = new FormData();
