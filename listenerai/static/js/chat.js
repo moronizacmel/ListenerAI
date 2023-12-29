@@ -30,14 +30,24 @@ const generateResponse = async (incomingChatLi) => {
 
     } catch (error) {
         messageElement.textContent = "Oops! Something went wrong";
-
     }
-
-
 }
 
 const handleChat = () => {
     userMessage = chatInput.value.trim();
+    if(!userMessage) return;
+
+    chatBox.appendChild(createChatLi(userMessage, "outgoing"));
+
+    setTimeout(() => {
+        const incomingChatLi = createChatLi("Loading...", "incoming")
+        chatBox.appendChild(incomingChatLi);
+        generateResponse(incomingChatLi);
+    }, 600);
+}
+
+const handleVoice = (transcription) => {
+    userMessage = transcription.trim();
     if(!userMessage) return;
 
     chatBox.appendChild(createChatLi(userMessage, "outgoing"));

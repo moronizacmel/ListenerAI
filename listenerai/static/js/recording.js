@@ -23,6 +23,8 @@ let NOISE_AMPLITUDE = 50;
 
 let SOUND = true;
 
+let tempTranscription = "";
+
 function SetupAudio(){
 
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
@@ -54,10 +56,18 @@ function SetupStream(stream){
         chunks.push(e.data);
     } 
 
-    recorder.onstop = e => {
+    recorder.onstop = async e => {
         if (chunks.length > 0) {
             console.log('Sending Data: ', chunks);
-            SendAudioSegment(chunks);
+            await SendAudioSegment(chunks);
+
+            if (tempTranscription.includes("?")) {
+
+                handleVoice(tempTranscription);
+
+            }
+
+            
         }
         chunks = [];
     }
@@ -147,8 +157,10 @@ async function SendAudioSegment(segment) {
         });
 
         const transcription = await response.json();
+        tempTranscription = transcription.transcription;
         console.log('Transcription:', transcription);
-        await showTranscriptionProgressively(transcription.transcription);
+        await showTranscriptionProgressively(tempTranscription);
+
     } catch (error) {
         console.error('Error:', error);
     }
