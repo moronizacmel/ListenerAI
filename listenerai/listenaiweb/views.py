@@ -1,31 +1,29 @@
 from django.shortcuts import render
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpRequest
 from django.conf import settings
 
 import whisper
 import os
 import threading
 
+import json
 
 # Imports for Google Gemini
 import google.generativeai as genai
 from dotenv import load_dotenv
-
 load_dotenv('.env')
-KEY = os.dotenv('GOOGLE_GEMINI')
+KEY = os.getenv('GOOGLE_GEMINI')
 genai.configure(api_key=KEY)
+modelGemini = genai.GenerativeModel('gemini-pro')
 
-# Create your views here.
 
-model = whisper.load_model("base")
-
+# For Whisper
+modelWhisper = whisper.load_model("base")
 file_counter = 1
-
 file_lock = threading.Lock()
 
-
-
+# Create your views here.
 def index (request):
     return render(request, 'index.html')
 
@@ -43,7 +41,7 @@ def listen(request):
                 with open(temp_audio_path, 'wb') as temp_audio_file:
                     temp_audio_file.write(audio_content)
 
-                result = model.transcribe(temp_audio_path)
+                result = modelWhisper.transcribe(temp_audio_path)
                 transcription = result["text"]
 
                 os.remove(temp_audio_path)
@@ -59,5 +57,14 @@ def gemini(request):
 
     if request.method == 'POST':
 
-        return
-
+        data = request.POST       
+        
+        if 'prompt' in data:
+            prompt_text = data['prompt']
+            response = modelGemini.generate_content(prompt_text)
+            print(response.text)
+            return JsonResponse({'answer': response.text})
+        else:
+            return JsonResponse({"error": "The field 'prompt' is not present"}, status=400)
+        
+    return JsonResponse({"error": "You can only use POST"}, status=400)

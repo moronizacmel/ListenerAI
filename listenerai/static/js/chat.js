@@ -12,30 +12,41 @@ const createChatLi = (message, className) => {
     return chatLi;
 }
 
-const generateResponse = () => {
+const generateResponse = async (incomingChatLi) => {
+
+    const messageElement = incomingChatLi.querySelector("p");
+    const formData = new FormData();
+    formData.append('prompt', userMessage);
+    formData.append('csrfmiddlewaretoken', csrfToken);
 
     try {
-        const response = fetch('/listen', {
+        const response = await fetch('/gemini', {
             method: 'POST',
             body: formData
         });
+        const generated = await response.json();
+        messageElement.textContent = generated['answer'];
+        console.log("Testing", generated);
 
-        const transcription = response.json();
-        console.log('Transcription:', transcription);
     } catch (error) {
-        console.error('Error:', error);
+        messageElement.textContent = "Oops! Something went wrong";
+
     }
+
 
 }
 
 const handleChat = () => {
     userMessage = chatInput.value.trim();
     if(!userMessage) return;
+
     chatBox.appendChild(createChatLi(userMessage, "outgoing"));
+
     setTimeout(() => {
-        chatBox.appendChild(createChatLi("Loading...", "incoming"));
+        const incomingChatLi = createChatLi("Loading...", "incoming")
+        chatBox.appendChild(incomingChatLi);
+        generateResponse(incomingChatLi);
     }, 600);
-    generateResponse();
 }
 
 sendChatBtn.addEventListener("click", handleChat);
