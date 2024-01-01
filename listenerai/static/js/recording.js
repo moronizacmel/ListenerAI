@@ -19,12 +19,11 @@ let tempTranscription = "";
 let SOUND = true;
 
 // Constants //
-const DEFAULT_MIN_SILENCE_DURATION = 1000;
-let MIN_SILENCE_DURATION = 1000;
+const DEFAULT_MIN_SILENCE_DURATION = 2000;
+let MIN_SILENCE_DURATION = 2000;
 const DEFAULT_NOISE_AMPLITUDE = 50; //50 more sensitive to sounds AND 100 less sensitive to sounds (From 0 to 256)
 const DEFAULT_MAX_NOISE_AMPLITUDE = 60; //50 more sensitive to sounds AND 100 less sensitive to sounds (From 0 to 256)
-let NOISE_AMPLITUDE = 50;
-const DEFAULT_MIN_SOUND_DURATION = 3000;
+let MIN_NOISE_AMPLITUDE = 50;
 
 function SetupAudio(){
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
@@ -45,8 +44,7 @@ function SetupStream(stream){
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const source = audioContext.createMediaStreamSource(stream);
     const analyser = audioContext.createAnalyser();
-    //Small-Faster: 64  Medium-Regular: 256-1024    Large-Slow: 2048
-    analyser.fftSize = 256;
+    analyser.fftSize = 256; //Small-Faster: 64  Medium-Regular: 256-1024    Large-Slow: 2048
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
     source.connect(analyser);
 
@@ -78,32 +76,27 @@ function SetupStream(stream){
     
         function analyzeAudio() {
             if (is_recording) {
+                
                 analyser.getByteFrequencyData(dataArray);
                 let averageAmplitude = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-    
-                let timeSinceLastDetection = currentTime - lastDetectionTime;
-    
-                if (averageAmplitude < NOISE_AMPLITUDE) {
+
+                if (averageAmplitude < MIN_NOISE_AMPLITUDE) {
+
+                    let timeSinceLastDetection = currentTime - lastDetectionTime;
 
                     if (timeSinceLastDetection >= MIN_SILENCE_DURATION) {
-                        if (silenceStartTime === 0) {
-                            silenceStartTime = Date.now();        
-                        }
-    
-                        const silenceDuration = Date.now() - silenceStartTime;
-    
-                        if (silenceDuration >= MIN_SILENCE_DURATION) {
+                        
                             SOUND = false;
                             console.log('Silencio');
-                            lastDetectionTime = Date.now();
                             resetSilenceAmplitude();
 
                             if (finishedSilence){
                                 finishedSilence = false;
                                 recorder.stop(); 
+                                chunks = [];
                             }
-                        }
                     }
+
                 } else {
                     SOUND = true;
 
@@ -114,9 +107,13 @@ function SetupStream(stream){
                     silenceStartTime = 0;
                     console.log('Sound');
                     finishedSilence = true;
+
+                    lastDetectionTime = Date.now();
                 }
-                currentTime = Date.now();
             }
+
+            currentTime = Date.now(); //This has to be necessarily at the end
+
             requestAnimationFrame(analyzeAudio);
         }
         analyzeAudio();
@@ -178,18 +175,21 @@ function showTranscriptionProgressively(transcription) {
 function updateSilenceAmplitude() {
 
     if(SOUND && is_recording){
-        if (NOISE_AMPLITUDE < DEFAULT_MAX_NOISE_AMPLITUDE){
-            NOISE_AMPLITUDE = NOISE_AMPLITUDE + 1;
-            MIN_SILENCE_DURATION = MIN_SILENCE_DURATION - 50;
+        if (MIN_NOISE_AMPLITUDE <= DEFAULT_MAX_NOISE_AMPLITUDE){
+            MIN_NOISE_AMPLITUDE = MIN_NOISE_AMPLITUDE + 1;
         }
-        console.log(NOISE_AMPLITUDE);
+
+        if (MIN_SILENCE_DURATION >= 1000){
+            MIN_SILENCE_DURATION = MIN_SILENCE_DURATION - 500;
+        }
+        console.log(MIN_NOISE_AMPLITUDE);
     }
 
 }
 
 function resetSilenceAmplitude() {
 
-    NOISE_AMPLITUDE = DEFAULT_NOISE_AMPLITUDE;
+    MIN_NOISE_AMPLITUDE = DEFAULT_NOISE_AMPLITUDE;
     MIN_SILENCE_DURATION = DEFAULT_MIN_SILENCE_DURATION;
 
 }
