@@ -19,7 +19,7 @@ modelGemini = genai.GenerativeModel('gemini-pro')
 
 
 # For Whisper
-modelWhisper = whisper.load_model("base")
+modelWhisper = whisper.load_model("base.en")
 file_counter = 1
 file_lock = threading.Lock()
 
