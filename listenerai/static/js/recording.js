@@ -57,7 +57,14 @@ function SetupStream(stream){
     recorder.onstop = async e => {
         if (chunks.length > 0) {
             console.log('Sending Data: ', chunks);
+
+            let startTime = Date.now();
             await SendAudioSegment(chunks);
+            let endTime = Date.now();
+
+            let processTime = endTime - startTime;
+
+            console.log("Time to create audio: ", processTime);
 
             if (tempTranscription.includes("?")) {
                 handleVoice(tempTranscription);
@@ -87,7 +94,7 @@ function SetupStream(stream){
                     if (timeSinceLastDetection >= MIN_SILENCE_DURATION) {
                         
                             SOUND = false;
-                            console.log('Silencio');
+                            //console.log('Silencio');
                             resetSilenceAmplitude();
 
                             if (finishedSilence){
@@ -105,7 +112,7 @@ function SetupStream(stream){
                     }
 
                     silenceStartTime = 0;
-                    console.log('Sound');
+                    //console.log('Sound');
                     finishedSilence = true;
 
                     lastDetectionTime = Date.now();
