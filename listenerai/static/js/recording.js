@@ -14,19 +14,19 @@ let recorder = null;
 
 let chunks = [];
 
-const DEFAULT_MIN_SILENCE_DURATION = 1000;
-let MIN_SILENCE_DURATION = 1000;
-
-//50 more sensitive to sounds AND 100 less sensitive to sounds (From 0 to 256)
-const DEFAULT_NOISE_AMPLITUDE = 50;
-let NOISE_AMPLITUDE = 50;
+let tempTranscription = "";
 
 let SOUND = true;
 
-let tempTranscription = "";
+// Constants //
+const DEFAULT_MIN_SILENCE_DURATION = 1000;
+let MIN_SILENCE_DURATION = 1000;
+const DEFAULT_NOISE_AMPLITUDE = 50; //50 more sensitive to sounds AND 100 less sensitive to sounds (From 0 to 256)
+const DEFAULT_MAX_NOISE_AMPLITUDE = 60; //50 more sensitive to sounds AND 100 less sensitive to sounds (From 0 to 256)
+let NOISE_AMPLITUDE = 50;
+const DEFAULT_MIN_SOUND_DURATION = 3000;
 
 function SetupAudio(){
-
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
         navigator.mediaDevices
             .getUserMedia({
@@ -62,12 +62,8 @@ function SetupStream(stream){
             await SendAudioSegment(chunks);
 
             if (tempTranscription.includes("?")) {
-
                 handleVoice(tempTranscription);
-
-            }
-
-            
+            }    
         }
         chunks = [];
     }
@@ -91,8 +87,7 @@ function SetupStream(stream){
 
                     if (timeSinceLastDetection >= MIN_SILENCE_DURATION) {
                         if (silenceStartTime === 0) {
-                            silenceStartTime = Date.now();
-                            
+                            silenceStartTime = Date.now();        
                         }
     
                         const silenceDuration = Date.now() - silenceStartTime;
@@ -110,15 +105,14 @@ function SetupStream(stream){
                         }
                     }
                 } else {
-
                     SOUND = true;
 
                     if (recorder.state == "inactive"){      
                         recorder.start();
                     }
+
                     silenceStartTime = 0;
                     console.log('Sound');
-
                     finishedSilence = true;
                 }
                 currentTime = Date.now();
@@ -181,11 +175,10 @@ function showTranscriptionProgressively(transcription) {
     });
 }
 
-
 function updateSilenceAmplitude() {
 
     if(SOUND && is_recording){
-        if (NOISE_AMPLITUDE < 60){
+        if (NOISE_AMPLITUDE < DEFAULT_MAX_NOISE_AMPLITUDE){
             NOISE_AMPLITUDE = NOISE_AMPLITUDE + 1;
             MIN_SILENCE_DURATION = MIN_SILENCE_DURATION - 50;
         }
@@ -198,12 +191,10 @@ function resetSilenceAmplitude() {
 
     NOISE_AMPLITUDE = DEFAULT_NOISE_AMPLITUDE;
     MIN_SILENCE_DURATION = DEFAULT_MIN_SILENCE_DURATION;
+
 }
 
 const updateAmplitude = setInterval(updateSilenceAmplitude, 1000);
-
-
-
 
 // function SendAudioSegment(segment) {
 //     const formData = new FormData();
