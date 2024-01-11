@@ -5,6 +5,10 @@ const text_container = document.getElementById('transcription-container');
 const csrfTokenInput = mic_btn.querySelector('[name="csrfmiddlewaretoken"]');
 const csrfToken = csrfTokenInput.value;
 
+var selectLanguage = document.getElementById("language");
+
+var selectedLanguage = "en"
+
 mic_btn.addEventListener('click', ToggleMic);
 
 let can_record = false;
@@ -22,7 +26,7 @@ let SOUND = true;
 const DEFAULT_MIN_SILENCE_DURATION = 2000;
 let MIN_SILENCE_DURATION = 2000;
 const DEFAULT_NOISE_AMPLITUDE = 50; //50 more sensitive to sounds AND 100 less sensitive to sounds (From 0 to 256)
-const DEFAULT_MAX_NOISE_AMPLITUDE = 60; //50 more sensitive to sounds AND 100 less sensitive to sounds (From 0 to 256)
+const DEFAULT_MAX_NOISE_AMPLITUDE = 70; //50 more sensitive to sounds AND 100 less sensitive to sounds (From 0 to 256)
 let MIN_NOISE_AMPLITUDE = 50;
 
 function SetupAudio(){
@@ -62,9 +66,9 @@ function SetupStream(stream){
             await SendAudioSegment(chunks);
             let endTime = Date.now();
 
-            let processTime = endTime - startTime;
+            let processTime = (endTime - startTime)/1000;
 
-            console.log("Time to create audio: ", processTime);
+            console.log("Time to create audio: ", processTime, "seconds");
 
             if (tempTranscription.includes("?")) {
                 handleVoice(tempTranscription);
@@ -136,6 +140,7 @@ function ToggleMic() {
     if (is_recording){
         chunks = [];
         recorder.start();
+        selectedLanguage = selectLanguage.value;
         mic_btn.classList.add("is-recording")
     } else {
         recorder.stop();
@@ -147,6 +152,8 @@ async function SendAudioSegment(segment) {
     const formData = new FormData();
     formData.append('audio', new Blob(segment, { type: "audio/mpeg" }));
     formData.append('csrfmiddlewaretoken', csrfToken);
+    formData.append('language', selectedLanguage);
+    console.log(selectLanguage);
 
     try {
         const response = await fetch('/listen', {

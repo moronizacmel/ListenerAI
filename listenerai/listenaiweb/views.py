@@ -19,9 +19,11 @@ modelGemini = genai.GenerativeModel('gemini-pro')
 
 
 # For Whisper
-modelWhisper = whisper.load_model("base.en")
+modelWhisper = whisper.load_model("base")
 file_counter = 1
 file_lock = threading.Lock()
+lastTranscript = ""
+
 
 # Create your views here.
 def index (request):
@@ -29,9 +31,11 @@ def index (request):
 
 def listen(request):
     global file_counter
+    global lastTranscript
 
     if request.method == 'POST':
         audio_blob = request.FILES.get('audio')
+        language = str(request.POST.get('language'))
 
         if audio_blob:
             audio_content = audio_blob.read()
@@ -41,14 +45,26 @@ def listen(request):
                 with open(temp_audio_path, 'wb') as temp_audio_file:
                     temp_audio_file.write(audio_content)
 
-                result = modelWhisper.transcribe(temp_audio_path)
-                transcription = result["text"]
+
+                #Whisper START
+
+                audio = whisper.load_audio(temp_audio_path)
+                audio = whisper.pad_or_trim(audio)
+
+                mel = whisper.log_mel_spectrogram(audio).to(modelWhisper.device)
+
+                options = whisper.DecodingOptions(fp16 = False, language=language)
+                result = whisper.decode(modelWhisper, mel, options)
+
+                lastTranscript = result.text
+
+                #Whisper END
 
                 os.remove(temp_audio_path)
 
                 file_counter += 1
 
-            return JsonResponse({'transcription': transcription})
+            return JsonResponse({'transcription': lastTranscript})
 
     else:
         return render(request, 'listening.html')
