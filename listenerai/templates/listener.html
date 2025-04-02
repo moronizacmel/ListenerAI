@@ -8,12 +8,24 @@
     <link rel="stylesheet" href="{% static '/css/recording.css' %}"> 
     <link rel="stylesheet" href="{% static '/css/chat.css' %}">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="{% static 'js/chat.js' %}" defer></script> 
 {% endblock %}
 
 {% block content %}
 
-<div class="recordingContent">
+<h1>Speech Recognition</h1>
+
+<div class="speech">
+
+    <div class="texts">
+
+        <p>Hello World</p>
+
+    </div>
+
+</div>
+
+
+<!-- <div class="recordingContent">
     <div class="titles">Listening</div>
     <select name="language" id="language">
         <option value="en">English</option>
@@ -44,11 +56,10 @@
         <textarea placeholder="Enter a message..." required></textarea>
         <span id="send-btn" class="material-icons">send</span>
     </div>
-
-</div>
+</div> -->
 
 {% endblock %}
 
 {% block bodyscripts %} 
-    <script src="{% static 'js/recording.js' %}"></script> 
+    <script src="{% static 'js/speechrecognition.js' %}"></script> 
 {% endblock %}

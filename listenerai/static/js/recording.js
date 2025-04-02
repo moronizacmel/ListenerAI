@@ -72,7 +72,7 @@ function SetupStream(stream){
 
             if (tempTranscription.includes("?")) {
                 handleVoice(tempTranscription);
-            }    
+            }
         }
         chunks = [];
     }
@@ -92,13 +92,10 @@ function SetupStream(stream){
                 let averageAmplitude = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
 
                 if (averageAmplitude < MIN_NOISE_AMPLITUDE) {
-
                     let timeSinceLastDetection = currentTime - lastDetectionTime;
-
                     if (timeSinceLastDetection >= MIN_SILENCE_DURATION) {
-                        
                             SOUND = false;
-                            //console.log('Silencio');
+                            //console.log('Silence');
                             resetSilenceAmplitude();
 
                             if (finishedSilence){
@@ -114,17 +111,13 @@ function SetupStream(stream){
                     if (recorder.state == "inactive"){      
                         recorder.start();
                     }
-
                     silenceStartTime = 0;
                     //console.log('Sound');
                     finishedSilence = true;
-
                     lastDetectionTime = Date.now();
                 }
             }
-
             currentTime = Date.now(); //This has to be necessarily at the end
-
             requestAnimationFrame(analyzeAudio);
         }
         analyzeAudio();
@@ -192,20 +185,16 @@ function updateSilenceAmplitude() {
         if (MIN_NOISE_AMPLITUDE <= DEFAULT_MAX_NOISE_AMPLITUDE){
             MIN_NOISE_AMPLITUDE = MIN_NOISE_AMPLITUDE + 1;
         }
-
         if (MIN_SILENCE_DURATION >= 1000){
             MIN_SILENCE_DURATION = MIN_SILENCE_DURATION - 500;
         }
         console.log(MIN_NOISE_AMPLITUDE);
     }
-
 }
 
 function resetSilenceAmplitude() {
-
     MIN_NOISE_AMPLITUDE = DEFAULT_NOISE_AMPLITUDE;
     MIN_SILENCE_DURATION = DEFAULT_MIN_SILENCE_DURATION;
-
 }
 
 const updateAmplitude = setInterval(updateSilenceAmplitude, 1000);
